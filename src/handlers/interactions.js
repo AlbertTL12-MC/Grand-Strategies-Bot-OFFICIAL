@@ -92,13 +92,21 @@ async function handleButton(interaction) {
     }
 
     if (customId.startsWith('report_ban_')) {
-      await member.send({
+      const dmResult = await member.send({
         embeds: [new EmbedBuilder().setColor(0xE74C3C).setTitle(`You have been banned from ${guild.name}`).setDescription('If you believe this was a mistake, you can submit an appeal below. **Appeals can only be submitted through this DM.**')],
         components: [new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`appeal_start_${guild.id}`).setLabel('Submit Appeal').setStyle(ButtonStyle.Primary))]
-      }).catch(() => null);
+      }).then(() => true).catch(() => false);
       await member.ban({ reason: `Banned via report by ${interaction.user.tag}` }).catch(() => null);
-      await logAction(guild, config, { action: 'Ban (via report)', target: member.user, moderator: interaction.user, reason: 'Banned via report action' });
-      await interaction.update({ content: `${interaction.message.content}\n\n**Banned** by ${interaction.user.tag}`, components: [] });
+      await logAction(guild, config, {
+        action: 'Ban (via report)',
+        target: member.user,
+        moderator: interaction.user,
+        reason: dmResult ? 'Banned via report action' : 'Banned via report action\n⚠️ Could not DM this user the appeal link (their DMs are likely closed).'
+      });
+      await interaction.update({
+        content: `${interaction.message.content}\n\n**Banned** by ${interaction.user.tag}${dmResult ? '' : ' (⚠️ appeal DM failed to send)'}`,
+        components: []
+      });
       return;
     }
   }

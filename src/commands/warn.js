@@ -48,7 +48,7 @@ module.exports = {
     if (count >= threshold) {
       const banReason = `Auto-ban: reached ${count}/${threshold} warnings. Last warning: ${reason}`;
 
-      await target.send({
+      const dmResult = await target.send({
         embeds: [
           new EmbedBuilder()
             .setColor(0xE74C3C)
@@ -63,7 +63,7 @@ module.exports = {
               .setStyle(ButtonStyle.Primary)
           )
         ]
-      }).catch(() => null);
+      }).then(() => true).catch(() => false);
 
       await member.ban({ reason: banReason }).catch(() => null);
 
@@ -71,10 +71,15 @@ module.exports = {
         action: 'Auto-Ban',
         target,
         moderator: interaction.client.user,
-        reason: banReason
+        reason: dmResult ? banReason : `${banReason}\n⚠️ Could not DM this user the appeal link (their DMs are likely closed).`
       });
 
-      return interaction.reply({ content: `⚠️ ${target.tag} reached ${count}/${threshold} warnings and has been **auto-banned**.`, ephemeral: true });
+      return interaction.reply({
+        content: dmResult
+          ? `⚠️ ${target.tag} reached ${count}/${threshold} warnings and has been **auto-banned**.`
+          : `⚠️ ${target.tag} reached ${count}/${threshold} warnings and has been **auto-banned**, but I couldn't DM them the appeal link (their DMs are probably closed).`,
+        ephemeral: true
+      });
     }
 
     return interaction.reply({ content: `${target.tag} has been warned. (${count}/${threshold} warnings)`, ephemeral: true });
