@@ -29,7 +29,8 @@ module.exports = {
           `Log channel: ${current.logChannelId ? `<#${current.logChannelId}>` : 'not set'}`,
           `Warn threshold: ${current.warnThreshold}`,
           `Backup server ID: ${current.backupGuildId || 'not set'}`,
-          `Anti-nuke detection: ${current.antiNukeEnabled !== false ? 'enabled' : 'disabled'}`
+          `Anti-nuke detection: ${current.antiNukeEnabled !== false ? 'enabled' : 'disabled'}`,
+          `Rank ladder: ${current.rankLadder && current.rankLadder.length ? `${current.rankLadder.length} rank(s) set (use /setranks to view/edit)` : 'not set (use /setranks)'}`
         ].join('\n'),
         ephemeral: true
       });
