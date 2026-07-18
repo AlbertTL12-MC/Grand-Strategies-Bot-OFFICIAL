@@ -1,8 +1,16 @@
 const { EmbedBuilder } = require('discord.js');
 
-async function logAction(guild, config, { action, target, moderator, reason }) {
-  if (!config.logChannelId) return;
-  const channel = await guild.channels.fetch(config.logChannelId).catch(() => null);
+// category: 'warn' | 'ban' | 'general' (default) — routes to the matching
+// dedicated channel, falling back to the general logChannelId if that
+// specific channel isn't set.
+async function logAction(guild, config, { action, target, moderator, reason, category = 'general' }) {
+  let channelId;
+  if (category === 'warn') channelId = config.warnLogChannelId || config.logChannelId;
+  else if (category === 'ban') channelId = config.banLogChannelId || config.logChannelId;
+  else channelId = config.logChannelId;
+
+  if (!channelId) return;
+  const channel = await guild.channels.fetch(channelId).catch(() => null);
   if (!channel) return;
 
   await channel.send({
