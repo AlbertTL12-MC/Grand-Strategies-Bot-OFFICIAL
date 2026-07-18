@@ -30,7 +30,8 @@ function ensureGuild(db, guildId) {
         warnThreshold: 3,     // warnings before auto-ban
         backupGuildId: null,  // server to evacuate members into if this one is nuked
         antiNukeEnabled: true,
-        rankLadder: []        // ordered array of role IDs, lowest rank first, for /promote and /demote
+        rankLadder: [],        // ordered array of role IDs, lowest rank first, for /promote and /demote
+        promotionLogChannelId: null // where promotion/demotion logs post; falls back to logChannelId if unset
       },
       warnings: {},        // userId -> array of { id, reason, moderatorId, timestamp }
       authorizedUsers: {}  // userId -> { accessToken, refreshToken, expiresAt }
@@ -42,6 +43,7 @@ function ensureGuild(db, guildId) {
   if (db.guilds[guildId].config.backupGuildId === undefined) db.guilds[guildId].config.backupGuildId = null;
   if (db.guilds[guildId].config.antiNukeEnabled === undefined) db.guilds[guildId].config.antiNukeEnabled = true;
   if (!db.guilds[guildId].config.rankLadder) db.guilds[guildId].config.rankLadder = [];
+  if (db.guilds[guildId].config.promotionLogChannelId === undefined) db.guilds[guildId].config.promotionLogChannelId = null;
   if (!db.guilds[guildId].warnings) {
     db.guilds[guildId].warnings = {};
   }
