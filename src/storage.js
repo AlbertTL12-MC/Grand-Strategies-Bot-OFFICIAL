@@ -25,8 +25,10 @@ function ensureGuild(db, guildId) {
   if (!db.guilds[guildId]) {
     db.guilds[guildId] = {
       config: {
-        modChannelId: null,   // where reports are posted
-        logChannelId: null,   // where mod actions (warn/mute/kick/ban) are logged
+        modChannelId: null,   // where reports AND appeals are posted
+        logChannelId: null,   // general "Mod Actions" catch-all (unwarn, clear warnings, appeal denied, anti-nuke alerts) + fallback for anything below that's unset
+        warnLogChannelId: null, // where /warn actions are logged
+        banLogChannelId: null,  // where ban/auto-ban/unban actions are logged
         warnThreshold: 3,     // warnings before auto-ban
         backupGuildId: null,  // server to evacuate members into if this one is nuked
         antiNukeEnabled: true,
@@ -39,8 +41,10 @@ function ensureGuild(db, guildId) {
     };
   }
   if (!db.guilds[guildId].config) {
-    db.guilds[guildId].config = { modChannelId: null, logChannelId: null, warnThreshold: 3, backupGuildId: null, antiNukeEnabled: true, rankLadder: [] };
+    db.guilds[guildId].config = { modChannelId: null, logChannelId: null, warnLogChannelId: null, banLogChannelId: null, warnThreshold: 3, backupGuildId: null, antiNukeEnabled: true, rankLadder: [], promotionLogChannelId: null, demotionLogChannelId: null };
   }
+  if (db.guilds[guildId].config.warnLogChannelId === undefined) db.guilds[guildId].config.warnLogChannelId = null;
+  if (db.guilds[guildId].config.banLogChannelId === undefined) db.guilds[guildId].config.banLogChannelId = null;
   if (db.guilds[guildId].config.backupGuildId === undefined) db.guilds[guildId].config.backupGuildId = null;
   if (db.guilds[guildId].config.antiNukeEnabled === undefined) db.guilds[guildId].config.antiNukeEnabled = true;
   if (!db.guilds[guildId].config.rankLadder) db.guilds[guildId].config.rankLadder = [];
