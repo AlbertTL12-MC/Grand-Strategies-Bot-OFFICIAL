@@ -58,13 +58,6 @@ module.exports = {
       return interaction.reply({ content: `Couldn't update roles: ${err.message}`, ephemeral: true });
     }
 
-    await logAction(guild, config, {
-      action: 'Promote',
-      target,
-      moderator: interaction.user,
-      reason: `Promoted to ${nextRole.name}. ${reason}`
-    });
-
     await postRankChangeEmbed(guild, config, {
       type: 'promotion',
       target,

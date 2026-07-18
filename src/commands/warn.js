@@ -42,7 +42,8 @@ module.exports = {
       action: 'Warn',
       target,
       moderator: interaction.user,
-      reason: `${reason} (warning ${count}/${threshold})`
+      reason: `${reason} (warning ${count}/${threshold})`,
+      category: 'warn'
     });
 
     if (count >= threshold) {
@@ -71,7 +72,8 @@ module.exports = {
         action: 'Auto-Ban',
         target,
         moderator: interaction.client.user,
-        reason: dmResult ? banReason : `${banReason}\n⚠️ Could not DM this user the appeal link (their DMs are likely closed).`
+        reason: dmResult ? banReason : `${banReason}\n⚠️ Could not DM this user the appeal link (their DMs are likely closed).`,
+        category: 'ban'
       });
 
       return interaction.reply({

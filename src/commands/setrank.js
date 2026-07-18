@@ -64,13 +64,6 @@ module.exports = {
 
     const isPromotion = targetIndex > currentIndex;
 
-    await logAction(guild, config, {
-      action: isPromotion ? 'Promote' : 'Demote',
-      target,
-      moderator: interaction.user,
-      reason: `Set to ${targetRole.name}. ${reason}`
-    });
-
     await postRankChangeEmbed(guild, config, {
       type: isPromotion ? 'promotion' : 'demotion',
       target,

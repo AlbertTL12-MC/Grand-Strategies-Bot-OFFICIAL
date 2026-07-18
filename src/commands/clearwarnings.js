@@ -20,7 +20,8 @@ module.exports = {
       action: 'Clear Warnings',
       target,
       moderator: interaction.user,
-      reason: `Cleared ${count} warning(s)`
+      reason: `Cleared ${count} warning(s)`,
+      category: 'warn'
     });
 
     return interaction.reply({ content: `Cleared ${count} warning(s) for ${target.tag}.`, ephemeral: true });

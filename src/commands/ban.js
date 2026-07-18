@@ -49,7 +49,8 @@ module.exports = {
       action: 'Ban',
       target,
       moderator: interaction.user,
-      reason: dmResult ? reason : `${reason}\n⚠️ Could not DM this user the appeal link (their DMs are likely closed) — they have no way to appeal unless contacted another way.`
+      reason: dmResult ? reason : `${reason}\n⚠️ Could not DM this user the appeal link (their DMs are likely closed) — they have no way to appeal unless contacted another way.`,
+      category: 'ban'
     });
 
     if (!dmResult) {

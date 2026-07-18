@@ -59,13 +59,6 @@ module.exports = {
       return interaction.reply({ content: `Couldn't update roles: ${err.message}`, ephemeral: true });
     }
 
-    await logAction(guild, config, {
-      action: 'Demote',
-      target,
-      moderator: interaction.user,
-      reason: `Demoted to ${newRoleName}. ${reason}`
-    });
-
     await postRankChangeEmbed(guild, config, {
       type: 'demotion',
       target,

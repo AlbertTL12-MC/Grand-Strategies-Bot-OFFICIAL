@@ -25,7 +25,8 @@ module.exports = {
       action: 'Unwarn',
       target,
       moderator: interaction.user,
-      reason: `Removed warning: "${removed.reason}"`
+      reason: `Removed warning: "${removed.reason}"`,
+      category: 'warn'
     });
 
     return interaction.reply({ content: `Removed warning \`${warningId}\` from ${target.tag}.`, ephemeral: true });
