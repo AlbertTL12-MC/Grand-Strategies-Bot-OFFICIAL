@@ -9,16 +9,32 @@ moves authorized members to a backup server if your main server is nuked.
 - **`/warn @user reason`** — adds a warning. At the configured threshold (default 3),
   the member is automatically banned. Before banning, the bot DMs them ban info and
   an **appeal button** — appeals can only be submitted through that DM.
+- **`/ban @user reason`** — bans a member directly through the bot (sends the appeal
+  DM first, same as an auto-ban). Always use this instead of Discord's native ban
+  menu, since only bans that go through GS Bot trigger the appeal DM.
 - **`/warnings @user`**, **`/unwarn @user warning_id`**, **`/clearwarnings @user`** —
   manage warnings.
 - **`/report @user reason`** — any member can privately report someone. It's posted
   only to your configured mod channel, with Warn / Ban / Dismiss buttons for staff.
 - **Appeals** — banned users get a DM with a "Submit Appeal" button, which opens a
   form. Their appeal is posted to the mod channel with Approve (auto-unban) / Deny
-  buttons, and they get DMed the decision.
-- **Logs** — every mod action (warn, auto-ban, ban via report, unban via appeal) is
-  posted to your configured log channel.
-- **`/setup`** — configure the mod channel, log channel, and warn threshold.
+  buttons, and they get DMed the decision. If a user's DMs are closed and the appeal
+  message can't send, staff are warned about it right in the log entry and command
+  reply, instead of it failing silently.
+- **Logs** — every mod action (warn, ban, auto-ban, ban via report, unban via appeal,
+  promote, demote) is posted to your configured log channel.
+- **Promotions/demotions:**
+  - **`/setranks rank_1 rank_2 ...`** (admin) — define your rank ladder as roles,
+    from lowest to highest (up to 10 ranks).
+  - **`/promote @user reason evidence`** — moves a member up one rank. Give them
+    the lowest rank if they don't have one yet.
+  - **`/demote @user reason evidence`** — moves a member down one rank, or removes
+    their rank entirely if they're already at the bottom.
+  - Both post a formatted embed (staff username, `Old Rank → New Rank`, reason,
+    optional evidence screenshot/attachment, and the member's avatar) to your
+    promotion log channel — or the regular log channel if you haven't set one.
+- **`/setup`** — configure the mod channel, log channel, promotion/demotion log
+  channel, and warn threshold.
 - **Backup/evacuation system:**
   - **`/setbackup backup_guild_id`** (admin) — sets which server to evacuate members
     into. The bot must already be a member of that server.
@@ -41,7 +57,7 @@ moves authorized members to a backup server if your main server is nuked.
 2. **Bot** tab → click **Reset Token** → copy it (this is your `DISCORD_TOKEN`). Keep it secret.
 3. Still on the **Bot** tab, enable the **Server Members Intent** (required for warnings/bans to work reliably).
 4. **OAuth2** tab → copy the **Client ID** (`CLIENT_ID`) and **Client Secret** (`CLIENT_SECRET`) — you only need the secret if you're using the backup/evacuation feature.
-5. **OAuth2 → URL Generator**: check `bot` and `applications.commands`, then under Bot Permissions check at least: Ban Members, Moderate Members, Manage Roles (if you'll use it for anti-nuke), Send Messages, Create Invite, View Channels. Use the generated URL to invite the bot to your main server **and** your backup server.
+5. **OAuth2 → URL Generator**: check `bot` and `applications.commands`, then under Bot Permissions check at least: Ban Members, Moderate Members, Manage Roles (needed for `/promote`, `/demote`, and anti-nuke), Send Messages, Create Invite, View Channels. Use the generated URL to invite the bot to your main server **and** your backup server.
 
 ### 2. Install and configure
 
@@ -62,13 +78,31 @@ Fill in `.env`:
 ### 3. Deploy slash commands and run
 
 ```bash
-npm run deploy   # registers /warn, /report, /setup, etc. with Discord
-npm start        # starts the bot
+npm start        # registers slash commands, then starts the bot (does both automatically)
+npm run deploy    # optional: re-register commands only, without starting the bot
 ```
+
+### 4. If you're using `/promote` / `/demote`
+
+In **Server Settings → Roles**, drag GS Bot's own role **above every rank role**
+in your `/setranks` ladder. Discord won't let a bot assign or remove a role that's
+positioned above its own highest role — the commands will tell you clearly if this
+is the problem.
 
 ## Hosting
 
 This bot needs to run 24/7. A couple of honest notes on hosting:
+
+### Deploying on Railway (click-based, no terminal)
+
+1. Push this project to a GitHub repo (keep the folder structure intact — `src/commands/`, `src/handlers/`, etc. as real subfolders).
+2. On [railway.app](https://railway.app), sign in with GitHub → **New Project** → **Deploy from GitHub repo** → pick your repo.
+3. Open the service → **Variables** tab → add `DISCORD_TOKEN` and `CLIENT_ID` (and `CLIENT_SECRET`/`PUBLIC_URL`/`PORT` if using backup/evacuation).
+4. Leave `GUILD_ID` unset for a global bot — new slash commands can then take up to an hour to appear. Set `GUILD_ID` to one server's ID temporarily while testing to make new commands show up instantly there instead.
+5. Deploy. `npm start` handles both registering commands and running the bot — no separate deploy step needed.
+6. Free tier sleeps after inactivity; add a payment method for always-on (~$5/mo covers a small bot).
+
+### General notes
 
 - **If you're only using moderation features (no backup/evacuation)**, you don't
   need a public web server at all — any always-on Node host works, including a
