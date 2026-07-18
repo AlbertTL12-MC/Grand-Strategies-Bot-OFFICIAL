@@ -20,4 +20,38 @@ async function logAction(guild, config, { action, target, moderator, reason }) {
   }).catch(() => null);
 }
 
-module.exports = { logAction };
+// Posts a rich "Promotion Log" / "Demotion Log" embed, matching a staff-username /
+// rank-change / reason / evidence layout.
+async function postRankChangeEmbed(guild, config, { type, target, moderator, oldRankName, newRankName, reason, evidence }) {
+  const channelId = config.promotionLogChannelId || config.logChannelId;
+  if (!channelId) return;
+  const channel = await guild.channels.fetch(channelId).catch(() => null);
+  if (!channel) return;
+
+  const isPromotion = type === 'promotion';
+
+  const embed = new EmbedBuilder()
+    .setColor(isPromotion ? 0x2ECC71 : 0xE74C3C)
+    .setTitle(isPromotion ? 'Promotion Log' : 'Demotion Log')
+    .setDescription(`${target.username} has been ${isPromotion ? 'promoted' : 'demoted'}!`)
+    .setThumbnail(target.displayAvatarURL())
+    .addFields(
+      { name: 'Staff Username', value: moderator.username },
+      { name: 'Rank Change', value: `${oldRankName} → ${newRankName}` },
+      { name: 'Reason', value: reason || 'No reason given' }
+    )
+    .setTimestamp();
+
+  const payload = { embeds: [embed] };
+
+  if (evidence) {
+    if (evidence.contentType?.startsWith('image/')) {
+      embed.setImage(evidence.url);
+    }
+    embed.addFields({ name: 'Evidence', value: `[Attachment](${evidence.url})` });
+  }
+
+  await channel.send(payload).catch(() => null);
+}
+
+module.exports = { logAction, postRankChangeEmbed };
