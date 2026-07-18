@@ -1,18 +1,20 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const storage = require('../storage');
-const { logAction } = require('../utils/log');
+const { logAction, postRankChangeEmbed } = require('../utils/log');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('promote')
     .setDescription("Move a member up one step on the server's rank ladder")
     .addUserOption(opt => opt.setName('user').setDescription('The member to promote').setRequired(true))
-    .addStringOption(opt => opt.setName('reason').setDescription('Optional reason'))
+    .addStringOption(opt => opt.setName('reason').setDescription('Reason for the promotion').setRequired(true))
+    .addAttachmentOption(opt => opt.setName('evidence').setDescription('Optional screenshot/log proving they earned it'))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 
   async execute(interaction) {
     const target = interaction.options.getUser('user');
-    const reason = interaction.options.getString('reason') || 'No reason given';
+    const reason = interaction.options.getString('reason');
+    const evidence = interaction.options.getAttachment('evidence');
     const guild = interaction.guild;
     const config = storage.getConfig(guild.id);
 
@@ -26,7 +28,6 @@ module.exports = {
     }
 
     const ladder = config.rankLadder;
-    // Find the highest rank role the member currently holds
     let currentIndex = -1;
     for (let i = ladder.length - 1; i >= 0; i--) {
       if (member.roles.cache.has(ladder[i])) { currentIndex = i; break; }
@@ -46,6 +47,10 @@ module.exports = {
       return interaction.reply({ content: `I can't assign **${nextRole.name}** — it's positioned above my own highest role. Move my role above it in Server Settings → Roles.`, ephemeral: true });
     }
 
+    const oldRoleName = currentIndex >= 0
+      ? (await guild.roles.fetch(ladder[currentIndex]).catch(() => null))?.name || 'Unranked'
+      : 'Unranked';
+
     try {
       if (currentIndex >= 0) await member.roles.remove(ladder[currentIndex]);
       await member.roles.add(nextRole.id);
@@ -58,6 +63,16 @@ module.exports = {
       target,
       moderator: interaction.user,
       reason: `Promoted to ${nextRole.name}. ${reason}`
+    });
+
+    await postRankChangeEmbed(guild, config, {
+      type: 'promotion',
+      target,
+      moderator: interaction.user,
+      oldRankName: oldRoleName,
+      newRankName: nextRole.name,
+      reason,
+      evidence
     });
 
     await target.send(`You were promoted to **${nextRole.name}** in ${guild.name}.`).catch(() => null);
