@@ -56,7 +56,8 @@ async function handleButton(interaction) {
         action: approve ? 'Appeal Approved (Unban)' : 'Appeal Denied',
         target: user || { id: appeal.userId, tag: appeal.userId },
         moderator: interaction.user,
-        reason: approve ? 'Appeal approved' : 'Appeal denied'
+        reason: approve ? 'Appeal approved' : 'Appeal denied',
+        category: 'ban'
       });
     }
 
@@ -86,7 +87,7 @@ async function handleButton(interaction) {
     if (customId.startsWith('report_warn_')) {
       const { count, threshold } = storage.addWarning(guild.id, targetId, 'Warned via report', interaction.user.id);
       await member.send(`You were warned in ${guild.name} following a report. (${count}/${threshold} warnings)`).catch(() => null);
-      await logAction(guild, config, { action: 'Warn (via report)', target: member.user, moderator: interaction.user, reason: `Warning ${count}/${threshold}` });
+      await logAction(guild, config, { action: 'Warn (via report)', target: member.user, moderator: interaction.user, reason: `Warning ${count}/${threshold}`, category: 'warn' });
       await interaction.update({ content: `${interaction.message.content}\n\n**Warned** by ${interaction.user.tag}`, components: [] });
       return;
     }
@@ -101,7 +102,8 @@ async function handleButton(interaction) {
         action: 'Ban (via report)',
         target: member.user,
         moderator: interaction.user,
-        reason: dmResult ? 'Banned via report action' : 'Banned via report action\n⚠️ Could not DM this user the appeal link (their DMs are likely closed).'
+        reason: dmResult ? 'Banned via report action' : 'Banned via report action\n⚠️ Could not DM this user the appeal link (their DMs are likely closed).',
+        category: 'ban'
       });
       await interaction.update({
         content: `${interaction.message.content}\n\n**Banned** by ${interaction.user.tag}${dmResult ? '' : ' (⚠️ appeal DM failed to send)'}`,
