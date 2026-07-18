@@ -23,12 +23,11 @@ async function logAction(guild, config, { action, target, moderator, reason }) {
 // Posts a rich "Promotion Log" / "Demotion Log" embed, matching a staff-username /
 // rank-change / reason / evidence layout.
 async function postRankChangeEmbed(guild, config, { type, target, moderator, oldRankName, newRankName, reason, evidence }) {
-  const channelId = config.promotionLogChannelId || config.logChannelId;
+  const isPromotion = type === 'promotion';
+  const channelId = (isPromotion ? config.promotionLogChannelId : config.demotionLogChannelId) || config.logChannelId;
   if (!channelId) return;
   const channel = await guild.channels.fetch(channelId).catch(() => null);
   if (!channel) return;
-
-  const isPromotion = type === 'promotion';
 
   const embed = new EmbedBuilder()
     .setColor(isPromotion ? 0x2ECC71 : 0xE74C3C)
